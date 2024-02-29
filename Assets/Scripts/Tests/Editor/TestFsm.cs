@@ -13,19 +13,19 @@ public class TestFsm
     {
         var fsm = new SimpleFsm();
         
-        fsm.RegisterState("1", new State("1"));
-        fsm.RegisterState("2", new State("2"));
-        fsm.RegisterState("3", new State("3"));
+        fsm.AddState("1", new State("1"));
+        fsm.AddState("2", new State("2"));
+        fsm.AddState("3", new State("3"));
         
         var from_1_to_2 = new Condition();
         var from_2_to_3 = new Condition();
         var from_3_to_1 = new Condition();
         var from_3_to_2 = new Condition();
         
-        fsm.RegisterTransition("1", "2", from_1_to_2);
-        fsm.RegisterTransition("2", "3", from_2_to_3);
-        fsm.RegisterTransition("3", "1", from_3_to_1);
-        fsm.RegisterTransition("3", "2", from_3_to_2);
+        fsm.AddTransition("1", "2", from_1_to_2);
+        fsm.AddTransition("2", "3", from_2_to_3);
+        fsm.AddTransition("3", "1", from_3_to_1);
+        fsm.AddTransition("3", "2", from_3_to_2);
         fsm.LaunchState("1");
         
         fsm.Tick();

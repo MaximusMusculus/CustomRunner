@@ -14,10 +14,26 @@ namespace StateMachine
     {
         bool Check();
     }
+
+    public class DelegateCondition : ICondition
+    {
+        private Func<bool> _func;
+
+        public DelegateCondition(Func<bool> func)
+        {
+            _func = func;
+        }
+
+        public bool Check()
+        {
+            return _func();
+        }
+    }
+    
     public interface IFsm
     {
-        void RegisterState(string name, IState state);
-        void RegisterTransition(string from, string to, ICondition condition);
+        void AddState(string name, IState state);
+        void AddTransition(string from, string to, ICondition condition);
         void LaunchState(string name);
     }
     
@@ -53,12 +69,12 @@ namespace StateMachine
             _currentFixedTickable = _emptyState;
         }
 
-        public void RegisterState(string name, IState state)
+        public void AddState(string name, IState state)
         {
             _states.Add(name, state);
         }
 
-        public void RegisterTransition(string from, string to, ICondition condition)
+        public void AddTransition(string from, string to, ICondition condition)
         {
             if (!_states.TryGetValue(from, out var fromSate))
             {

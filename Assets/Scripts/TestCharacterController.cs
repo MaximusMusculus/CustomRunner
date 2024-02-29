@@ -1,24 +1,6 @@
-using StateMachine;
 using UnityEngine;
 using VContainer.Unity;
 
-
-public class CharacterController : ITickable, IFixedTickable
-{
-    private SimpleFsm _fsm;
-    
-    
-    
-
-    public void Tick()
-    {
-        _fsm.Tick();
-    }
-    public void FixedTick()
-    {
-        _fsm.FixedTick();
-    }
-}
 
 public class TestCharacterController : IInitializable, ITickable, IFixedTickable
 {

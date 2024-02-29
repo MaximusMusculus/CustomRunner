@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Cinemachine;
 using StateMachine;
 using UnityEngine;
@@ -9,28 +8,30 @@ public class LevelLifeScope : LifetimeScope
 {
     [SerializeField] private CinemachineVirtualCamera _virtualCamera;
     [SerializeField] private CharacterContainer _player;
-    
     [SerializeField] private PlatformsConfig _platformsConfig;
+    [SerializeField] private LayerMask _ground;
+    [SerializeField] private LayerMask _enemy;
     
-
     protected override void Configure(IContainerBuilder builder)
     {
         base.Configure(builder);
         
         builder.RegisterInstance(_virtualCamera).AsSelf();
         builder.RegisterInstance(_platformsConfig).AsSelf();
+        builder.RegisterInstance(_ground);
+        
         
         builder.Register<SimpleCamera>(Lifetime.Singleton).As<ICamera>();
         builder.Register<InputJump>(Lifetime.Singleton).As<IInputJump, ITickable>();
-        builder.Register<InputAxisFotTest>(Lifetime.Singleton).As<IInputAxis>();
+        builder.Register<InputAxisFotTest>(Lifetime.Singleton).As<IInputAxis>(); //InputRunnerAxis
         builder.Register<PlatformFactory>(Lifetime.Singleton).As<IPlatformFactory>();
         builder.Register<PlatformPool>(Lifetime.Singleton).As<IPlatformPool, IInitializable>();
         builder.Register<PlatformForPlayerSpawner>(Lifetime.Singleton).As<ITickable>();
-
-        //builder.Register<InputRunnerAxis>(Lifetime.Singleton).AsImplementedInterfaces();
+        
+        
 
         builder.RegisterInstance<ICharacterContainer>(_player);
-        builder.RegisterEntryPoint<TestCharacterController>();
+        builder.RegisterEntryPoint<CharacterController>();
     }
 }
 

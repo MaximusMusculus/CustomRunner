@@ -13,7 +13,6 @@ public class PlatformForPlayerSpawner : ITickable
     private Queue<IPlatform> _activePlatforms = new Queue<IPlatform>();
     private int _platformNumber;
     
-
     public PlatformForPlayerSpawner(IPlatformPool platformPool, PlatformsConfig config, ICharacterContainer character)
     {
         _platformPool = platformPool;
@@ -22,13 +21,12 @@ public class PlatformForPlayerSpawner : ITickable
         _character = character;
     }
     
-
     public void Tick()
     {
         if (_position + _platformLenght / 2f > _platformNumber * _platformLenght + _platformLenght / 2f - _safeZone)
         {
             SpawnNextPlatform();
-            if (_activePlatforms.Count > 2)
+            if (_activePlatforms.Count > 3)
             {
                 DeletePrevPlatform();
             }
