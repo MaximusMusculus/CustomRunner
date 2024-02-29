@@ -1,8 +1,9 @@
 using UnityEngine;
+using VContainer.Unity;
 
 public interface IInputJump
 {
-    bool GetJump();
+    bool GetIsJump();
 }
 
 public interface IInputAxis
@@ -10,11 +11,16 @@ public interface IInputAxis
     Vector2 GetAxis();
 }
 
-public class InputJump : IInputJump
+public class InputJump : IInputJump, ITickable
 {
-    public bool GetJump()
+    private bool _isJump;
+    public bool GetIsJump()
     {
-        return Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0);
+        return _isJump;
+    }
+    public void Tick()
+    {
+        _isJump = Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0);
     }
 }
 public class InputRunnerAxis : IInputAxis
@@ -29,6 +35,6 @@ public class InputAxisFotTest : IInputAxis
 {
     public Vector2 GetAxis()
     {
-        return new Vector2(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"));
+        return new Vector2(Input.GetAxis("Horizontal"), 0); // Input.GetAxis("Vertical"));
     }
 }
