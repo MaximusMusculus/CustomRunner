@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: PlatformsConfig
   m_EditorClassIdentifier: 
   lenght: 30
+  safeZone: 10
   Platforms:
   - type: 1
     gameObject: {fileID: 4183883017773103402, guid: 833ffe1c74a37844ba80501449bbad9b, type: 3}

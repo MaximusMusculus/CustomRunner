@@ -25,56 +25,13 @@ public class LevelLifeScope : LifetimeScope
         builder.Register<InputAxisFotTest>(Lifetime.Singleton).As<IInputAxis>();
         builder.Register<PlatformFactory>(Lifetime.Singleton).As<IPlatformFactory>();
         builder.Register<PlatformPool>(Lifetime.Singleton).As<IPlatformPool, IInitializable>();
+        builder.Register<PlatformForPlayerSpawner>(Lifetime.Singleton).As<ITickable>();
 
         //builder.Register<InputRunnerAxis>(Lifetime.Singleton).AsImplementedInterfaces();
 
         builder.RegisterInstance<ICharacterContainer>(_player);
         builder.RegisterEntryPoint<TestCharacterController>();
     }
-}
-
-
-public class PlatformSpawner : ITickable
-{
-    private IPlatformPool _platformPool;
-
-    public PlatformSpawner(IPlatformPool platformPool)
-    {
-        _platformPool = platformPool;
-    }
-
-    public void Tick()
-    {
-        
-    }
-    
-    
-    /*
-
-    /*private IPlatformContainer _platformContainer;
-    private IPlatformFactory _platformFactory;
-    private IPlatformConfig _platformConfig;
-    private IPlatformPool _platformPool;
-    private IPlatformSpawnerConfig _platformSpawnerConfig;#1#
-    private ICharacterContainer _player;
-    
-    public float platformLength = 30.0f; // Длина платформы
-    public float safeZone = 50.0f; // Расстояние, за которым платформы могут быть удалены
-    public Transform playerTransform; // Позиция игрока
-    
-    private List<GameObject> activePlatforms;
-    private float spawnAheadDistance = 100.0f; // Расстояние перед игроком, на котором появляются платформы
-    private float _playerPosition => _player.Rigidbody.position.x;
-    private int _platformNumber;
-    
-    public void Tick()
-    {
-        if (_playerPosition - safeZone > _platformNumber * platformLength - spawnAheadDistance)
-        {
-        }
-        //SpawnPlatform();
-        //DeletePlatform();
-    }*/
 }
 
 

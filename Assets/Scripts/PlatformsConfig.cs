@@ -15,5 +15,7 @@ public class PlatformInfo
 public class PlatformsConfig : ScriptableObject
 {
     public int lenght = 30;
+    public int safeZone = 50;
+    
     public List<PlatformInfo> Platforms = new List<PlatformInfo>();
 }

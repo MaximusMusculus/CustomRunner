@@ -30,6 +30,7 @@ public class GamePlatform : IPlatform
     public GamePlatform(PlatformType type, GameObject gameObject)
     {
         Type = type;
+        _gameObject = gameObject;
     }
 
     public void Reset()
