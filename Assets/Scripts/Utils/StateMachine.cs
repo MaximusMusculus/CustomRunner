@@ -10,33 +10,16 @@ namespace StateMachine
         void Enter();
         void Exit();
     }
-    public interface ICondition
-    {
-        bool Check();
-    }
-
-    public class DelegateCondition : ICondition
-    {
-        private Func<bool> _func;
-
-        public DelegateCondition(Func<bool> func)
-        {
-            _func = func;
-        }
-
-        public bool Check()
-        {
-            return _func();
-        }
-    }
+    
     
     public interface IFsm
     {
         void AddState(string name, IState state);
-        void AddTransition(string from, string to, ICondition condition);
+        void AddTransition(string from, string to, Condition condition);
         void LaunchState(string name);
     }
-    
+    public delegate bool Condition();  
+        
     /// <summary>
     /// Написано в спешке, проверок на корректность ввода - почти нет.
     /// тестов тоже нет.
@@ -44,8 +27,8 @@ namespace StateMachine
     public class SimpleFsm : IFsm, ITickable, IFixedTickable
     {
         private readonly Dictionary<string, IState> _states = new Dictionary<string, IState>();
-        private readonly Dictionary<IState, List<ICondition>> _fromState = new Dictionary<IState, List<ICondition>>();
-        private readonly Dictionary<ICondition, IState> _toState = new Dictionary<ICondition, IState>();
+        private readonly Dictionary<IState, List<Condition>> _fromState = new Dictionary<IState, List<Condition>>();
+        private readonly Dictionary<Condition, IState> _toState = new Dictionary<Condition, IState>();
 
         private IState _currentState;
         private readonly EmptyState _emptyState;
@@ -74,7 +57,7 @@ namespace StateMachine
             _states.Add(name, state);
         }
 
-        public void AddTransition(string from, string to, ICondition condition)
+        public void AddTransition(string from, string to, Condition condition)
         {
             if (!_states.TryGetValue(from, out var fromSate))
             {
@@ -93,7 +76,7 @@ namespace StateMachine
 
             if (!_fromState.ContainsKey(fromSate))
             {
-                _fromState.Add(fromSate, new List<ICondition>());
+                _fromState.Add(fromSate, new List<Condition>());
             }
 
             _fromState[fromSate].Add(condition);
@@ -125,7 +108,7 @@ namespace StateMachine
             {
                 foreach (var condition in conditions)
                 {
-                    if (!condition.Check())
+                    if (!condition())
                     {
                         continue;
                     }

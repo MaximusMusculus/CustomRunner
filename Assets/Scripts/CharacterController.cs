@@ -3,22 +3,7 @@ using UnityEngine;
 using VContainer.Unity;
 
 
-public class InvertCondition : ICondition
-{
-    private readonly ICondition _condition;
-
-    public InvertCondition(ICondition condition)
-    {
-        _condition = condition;
-    }
-
-    public bool Check()
-    {
-        return !_condition.Check();
-    }
-}
-
-public class GroundedChecker : ICondition
+public class GroundedChecker 
 {
     private readonly LayerMask _groundLayer;
     private readonly ICharacterContainer _character;
@@ -50,23 +35,31 @@ public class CharacterController : ITickable, IFixedTickable
     private const string _stateRun = "Run";
     private const string _stateJump = "Jump";
     private const string _stateFall = "Fall";
+
+    private readonly GroundedChecker _groundedChecker;
     
     public CharacterController(ICharacterContainer character, IInputAxis inputAxis, IInputJump inputJump, LayerMask groundLayer)
     {
         _fsm = new SimpleFsm();
         var jumpState = new CharacterJump(character);
+        _groundedChecker = new GroundedChecker(character, groundLayer);
         
         _fsm.AddState(_stateRun,new CharacterRun(character, inputAxis));
         _fsm.AddState(_stateJump, jumpState);
         _fsm.AddState(_stateFall, new CharacterFall(character));
 
-        _fsm.AddTransition(_stateRun, _stateJump, new DelegateCondition(inputJump.GetIsJump));
-        _fsm.AddTransition(_stateRun, _stateFall, new InvertCondition(new GroundedChecker(character, groundLayer)));
-        
-        _fsm.AddTransition(_stateJump, _stateFall, jumpState);
-        _fsm.AddTransition(_stateFall, _stateRun, new GroundedChecker(character, groundLayer));
+        _fsm.AddTransition(_stateRun, _stateJump, inputJump.GetIsJump);
+        _fsm.AddTransition(_stateRun, _stateFall, () => !IsGrounded());
+
+        _fsm.AddTransition(_stateJump, _stateFall, jumpState.IsJumpEnd);
+        _fsm.AddTransition(_stateFall, _stateRun, IsGrounded);
         
         _fsm.LaunchState(_stateRun);
+    }
+    
+    private bool IsGrounded()
+    {
+        return _groundedChecker.Check();
     }
     
 
@@ -82,7 +75,7 @@ public class CharacterController : ITickable, IFixedTickable
 
 public sealed class CharacterFall : IState, ITickable, IFixedTickable
 {
-    private ICharacterContainer _character;
+    private readonly ICharacterContainer _character;
     private float _fallSpeed;
 
     public CharacterFall(ICharacterContainer character)
@@ -93,14 +86,11 @@ public sealed class CharacterFall : IState, ITickable, IFixedTickable
     public void Enter()
     {
         _fallSpeed = 0;
-        Debug.Log("fall start");
-        //animator is fall = true;
+        _character.Animator.SetBool(AnimationConstants.IsGrounded, false);
     }
 
     public void Exit()
     {
-        //animator is fall = false;
-        Debug.Log("fall end");
     }
     
     public void Tick()
@@ -130,12 +120,12 @@ public sealed class CharacterRun : IState, ITickable, IFixedTickable
     
     public void Enter()
     {
+        _character.Animator.SetBool(AnimationConstants.IsGrounded, true);
         //Animator.SetFloat(AnimationConstants.VelocityXAnimatorId, Mathf.Abs(_runningSpeed) / BaseSpeed);
     }
 
     public void Exit()
     {
-        
     }
 
     public void Tick()
@@ -151,7 +141,7 @@ public sealed class CharacterRun : IState, ITickable, IFixedTickable
     }
 }
 
-public sealed class CharacterJump : IState, ITickable, IFixedTickable, ICondition
+public sealed class CharacterJump : IState, ITickable, IFixedTickable
 {
     private float _jumpSpeed;
     private readonly ICharacterContainer _character;
@@ -164,6 +154,8 @@ public sealed class CharacterJump : IState, ITickable, IFixedTickable, IConditio
     public void Enter()
     {
         _jumpSpeed = 6f;
+        _character.Animator.SetTrigger(AnimationConstants.OnJump);
+        _character.Animator.SetBool(AnimationConstants.IsGrounded, false);
     }
 
     public void Exit()
@@ -183,7 +175,7 @@ public sealed class CharacterJump : IState, ITickable, IFixedTickable, IConditio
         //_character.Animator.SetBool(AnimationConstants.GroundedAnimatorId, _isGrounded);
     }
 
-    public bool Check()
+    public bool IsJumpEnd()
     {
         return _jumpSpeed <= 0;
     }

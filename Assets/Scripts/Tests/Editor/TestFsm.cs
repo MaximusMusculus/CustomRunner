@@ -22,10 +22,10 @@ public class TestFsm
         var from_3_to_1 = new Condition();
         var from_3_to_2 = new Condition();
         
-        fsm.AddTransition("1", "2", from_1_to_2);
-        fsm.AddTransition("2", "3", from_2_to_3);
-        fsm.AddTransition("3", "1", from_3_to_1);
-        fsm.AddTransition("3", "2", from_3_to_2);
+        fsm.AddTransition("1", "2", from_1_to_2.Check);
+        fsm.AddTransition("2", "3", from_2_to_3.Check);
+        fsm.AddTransition("3", "1", from_3_to_1.Check);
+        fsm.AddTransition("3", "2", from_3_to_2.Check);
         fsm.LaunchState("1");
         
         fsm.Tick();
@@ -64,7 +64,7 @@ public class TestFsm
         }
     }
     
-    public class Condition : ICondition
+    public class Condition 
     {
         private bool _success;
         
