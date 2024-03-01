@@ -17,3 +17,9 @@ MonoBehaviour:
   Platforms:
   - type: 1
     gameObject: {fileID: 4183883017773103402, guid: 833ffe1c74a37844ba80501449bbad9b, type: 3}
+  - type: 2
+    gameObject: {fileID: 4183883017773103402, guid: e6ac9e4ab6426a742923e248241282f9, type: 3}
+  - type: 3
+    gameObject: {fileID: 4183883017773103402, guid: d53dc7519d9ea91469144e6f8f9e2f02, type: 3}
+  - type: 4
+    gameObject: {fileID: 4183883017773103402, guid: 993b35914ea71ce49b2e28970f25c171, type: 3}

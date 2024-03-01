@@ -24,6 +24,9 @@ public class PlatformPool : IInitializable, IPlatformPool
     public void Initialize()
     {
         _pools[PlatformType.Custom] = new StackPool<IPlatform>(() => _platformFactory.CreatePlatform(PlatformType.Custom));
+        _pools[PlatformType.Frog] = new StackPool<IPlatform>(() => _platformFactory.CreatePlatform(PlatformType.Frog));
+        _pools[PlatformType.FrogSlime] = new StackPool<IPlatform>(() => _platformFactory.CreatePlatform(PlatformType.FrogSlime));
+        _pools[PlatformType.Enemy] = new StackPool<IPlatform>(() => _platformFactory.CreatePlatform(PlatformType.Enemy));
     }
 
     public IPlatform GetPlatform(PlatformType platformType)

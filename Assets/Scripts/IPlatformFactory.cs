@@ -13,6 +13,9 @@ public enum PlatformType
 {
     None = 0,
     Custom = 1,
+    Frog =2,
+    FrogSlime = 3,
+    Enemy = 4,
 }
 
 public class GamePlatform : IPlatform

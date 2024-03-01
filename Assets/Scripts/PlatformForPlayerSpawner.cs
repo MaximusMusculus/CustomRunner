@@ -45,10 +45,24 @@ public class PlatformForPlayerSpawner : ITickable, IFollowTarget, IResettable
     private void SpawnNextPlatform()
     {
         _platformNumber++;
-        var platform = _platformPool.GetPlatform(PlatformType.Custom);
+        var platform = _platformPool.GetPlatform(GetRandomPlatform());
         platform.Position = new Vector3(_platformNumber * _platformLenght, 0, 0);
         _activePlatforms.Enqueue(platform);
     }
+
+    private PlatformType GetRandomPlatform()
+    {
+        var value = Random.Range(1, 5);
+        return value switch
+        {
+            1 => PlatformType.Custom,
+            2 => PlatformType.Frog,
+            3 => PlatformType.FrogSlime,
+            4 => PlatformType.Enemy,
+            _ => PlatformType.Custom
+        };
+    }
+    
     private void DeletePrevPlatform()
     {
         _platformPool.ReleasePlatform(_activePlatforms.Dequeue());
