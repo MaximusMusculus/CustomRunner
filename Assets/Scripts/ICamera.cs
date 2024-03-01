@@ -1,12 +1,8 @@
 using Cinemachine;
 using UnityEngine;
 
-public interface ICamera
-{
-    void SetFollowTarget(Transform target);
-}
 
-public class SimpleCamera : ICamera
+public class SimpleCamera : IFollowTarget
 {
     private readonly CinemachineVirtualCamera _virtualCamera;
     public SimpleCamera(CinemachineVirtualCamera virtualCamera)

@@ -1,4 +1,7 @@
+using System.Collections.Generic;
+using System.Threading;
 using Cinemachine;
+using Cysharp.Threading.Tasks;
 using StateMachine;
 using UnityEngine;
 using VContainer;
@@ -15,45 +18,57 @@ public class LayersConfig
 public class LevelLifeScope : LifetimeScope
 {
     [SerializeField] private CinemachineVirtualCamera _virtualCamera;
-    [SerializeField] private CharacterContainer _player;
+    [SerializeField] private CharacterConfig _playerCharacterConfig;
     [SerializeField] private PlatformsConfig _platformsConfig;
     [SerializeField] private LayersConfig layersConfig;
     
     protected override void Configure(IContainerBuilder builder)
     {
         base.Configure(builder);
-        
-        builder.RegisterInstance(_virtualCamera).AsSelf();
-        builder.RegisterInstance(_platformsConfig).AsSelf();
+
         builder.RegisterInstance(layersConfig);
+        builder.RegisterInstance(_virtualCamera);
+        builder.RegisterInstance(_platformsConfig);
+        builder.RegisterInstance(_playerCharacterConfig);
         
-        
-        builder.Register<SimpleCamera>(Lifetime.Singleton).As<ICamera>();
+        builder.Register<SimpleCamera>(Lifetime.Singleton).As<IFollowTarget>();
         builder.Register<InputJump>(Lifetime.Singleton).As<IInputJump, ITickable>();
         builder.Register<InputAxisFotTest>(Lifetime.Singleton).As<IInputAxis>(); //InputRunnerAxis
         builder.Register<PlatformFactory>(Lifetime.Singleton).As<IPlatformFactory>();
+        builder.Register<CharacterFactory>(Lifetime.Singleton).As<ICharacterFactory>();
         builder.Register<PlatformPool>(Lifetime.Singleton).As<IPlatformPool, IInitializable>();
-        builder.Register<PlatformForPlayerSpawner>(Lifetime.Singleton).As<ITickable>();
-        
+        builder.Register<PlatformForPlayerSpawner>(Lifetime.Singleton).As<ITickable, IFollowTarget>();
 
-        builder.RegisterInstance<ICharacterContainer>(_player);
-        builder.RegisterEntryPoint<CharacterController>();
+        builder.RegisterEntryPoint<RunnerGame>();
     }
 }
 
 
-public class RunnerGame : IStartable, ITickable, IFixedTickable
+public class RunnerGame : IAsyncStartable, ITickable, IFixedTickable
 {
-    private IFsm _fsm;
+    private readonly ICharacterFactory _characterFactory;
+    private readonly CharacterConfig _characterConfig;
 
-    public RunnerGame()
+    private SimpleFsm _characterUpdate;
+    private readonly IReadOnlyList<IFollowTarget> _followTarget; //??
+
+    public RunnerGame(ICharacterFactory characterFactory, CharacterConfig characterConfig, IReadOnlyList<IFollowTarget> followTarget)
     {
-        _fsm = new SimpleFsm(); //get from
-        
+        _characterFactory = characterFactory;
+        _characterConfig = characterConfig;
+        _followTarget = followTarget;
     }
-
-    public void Start()
+    
+    public async UniTask StartAsync(CancellationToken cancellation)
     {
+        var playerCharacter = await _characterFactory.CreatePlayer(_characterConfig);
+        _characterUpdate = _characterFactory.CreatePlayerBehaviour(playerCharacter);
+
+        foreach (var target in _followTarget)
+        {
+            target.SetFollowTarget(playerCharacter.Rigidbody.transform);
+        }
+        
         //create states fsm
         //config transitions
         //launch
@@ -62,8 +77,14 @@ public class RunnerGame : IStartable, ITickable, IFixedTickable
     public void Tick()
     {
         //update fsm
+        _characterUpdate?.Tick();
     }
 
+    
+    public void FixedTick()
+    {
+        _characterUpdate?.FixedTick();
+    }
 
     public class GameContext 
     {
@@ -104,8 +125,5 @@ public class RunnerGame : IStartable, ITickable, IFixedTickable
     }
 
 
-    public void FixedTick()
-    {
-        
-    }
+
 }

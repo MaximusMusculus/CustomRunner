@@ -2,23 +2,32 @@ using System.Collections.Generic;
 using UnityEngine;
 using VContainer.Unity;
 
-public class PlatformForPlayerSpawner : ITickable
+
+public interface IFollowTarget
+{
+    void SetFollowTarget(Transform target);
+}
+public class PlatformForPlayerSpawner : ITickable, IFollowTarget
 {
     private readonly IPlatformPool _platformPool;
-    private readonly ICharacterContainer _character;
     private readonly int _platformLenght;
     private readonly int _safeZone;
-    private float _position => _character.Rigidbody.position.x;
+    private Transform _target;
+    private float _position => _target.position.x;
     
     private Queue<IPlatform> _activePlatforms = new Queue<IPlatform>();
     private int _platformNumber;
     
-    public PlatformForPlayerSpawner(IPlatformPool platformPool, PlatformsConfig config, ICharacterContainer character)
+    public PlatformForPlayerSpawner(IPlatformPool platformPool, PlatformsConfig config)
     {
         _platformPool = platformPool;
         _platformLenght = config.lenght;
         _safeZone = config.safeZone;
-        _character = character;
+    }
+    
+    public void SetFollowTarget(Transform target)
+    {
+        _target = target;
     }
     
     public void Tick()
@@ -44,6 +53,4 @@ public class PlatformForPlayerSpawner : ITickable
     {
         _platformPool.ReleasePlatform(_activePlatforms.Dequeue());
     }
-
-
 }

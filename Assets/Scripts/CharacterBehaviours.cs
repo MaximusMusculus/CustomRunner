@@ -29,69 +29,6 @@ public class OverlapCircleChecker
 }
 
 
-
-
-public class CharacterController : ITickable, IFixedTickable
-{
-    private readonly SimpleFsm _fsm;
-
-    private const string _stateRun = "Run";
-    private const string _stateJump = "Jump";
-    private const string _stateFall = "Fall";
-    private const string _stateDead = "Dead";
-
-    private readonly OverlapCircleChecker _groundChecker;
-    private readonly OverlapCircleChecker _enemyChecker;
-    
-    public CharacterController(ICharacterContainer character, IInputAxis inputAxis, IInputJump inputJump, LayersConfig config)
-    {
-        _fsm = new SimpleFsm();
-        var jumpState = new CharacterJump(character, inputAxis);
-        _groundChecker = new OverlapCircleChecker(character, config.ground, 0.85f);
-        _enemyChecker = new OverlapCircleChecker(character, config.enemy, 0.6f);
-        
-        _fsm.AddState(_stateRun,new CharacterRun(character, inputAxis));
-        _fsm.AddState(_stateJump, jumpState);
-        _fsm.AddState(_stateFall, new CharacterFall(character, inputAxis));
-        _fsm.AddState(_stateDead, new CharacterDead(character));
-
-        _fsm.AddTransition(_stateRun, _stateJump, inputJump.GetIsJump);
-        _fsm.AddTransition(_stateRun, _stateFall, () => !IsGrounded());
-
-        _fsm.AddTransition(_stateJump, _stateFall, jumpState.IsJumpEnd);
-        _fsm.AddTransition(_stateFall, _stateRun, IsGrounded);
-        
-        //добавить any state
-        _fsm.AddTransition(_stateRun, _stateDead, () => IsDead());
-        _fsm.AddTransition(_stateJump, _stateDead, () => IsDead());
-        _fsm.AddTransition(_stateFall, _stateDead, () => IsDead());
-
-        _fsm.LaunchState(_stateRun);
-    }
-    
-    private bool IsGrounded()
-    {
-        return _groundChecker.Check();
-    }
-
-    private bool IsDead()
-    {
-        return _enemyChecker.Check();
-    }
-    
-
-    public void Tick()
-    {
-        _fsm.Tick();
-    }
-    public void FixedTick()
-    {
-        _fsm.FixedTick();
-    }
-}
-
-
-
 public class CharacterFall : IState, ITickable, IFixedTickable
 {
     private readonly ICharacterContainer _character;
