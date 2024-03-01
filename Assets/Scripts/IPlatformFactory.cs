@@ -18,14 +18,13 @@ public enum PlatformType
 public class GamePlatform : IPlatform
 {
     public PlatformType Type { get; }
+    private readonly GameObject _gameObject;
 
     public Vector3 Position
     {
         get => _gameObject.transform.position;
         set => _gameObject.transform.position = value;
     }
-
-    private GameObject _gameObject;
 
     public GamePlatform(PlatformType type, GameObject gameObject)
     {
@@ -35,7 +34,7 @@ public class GamePlatform : IPlatform
 
     public void Reset()
     {
-       //возвращение
+        //возвращение
     }
 }
 
@@ -44,9 +43,13 @@ public interface IPlatformFactory
     IPlatform CreatePlatform(PlatformType platformType);
 }
 
+
+/// <summary>
+/// Создает платформы по запросу
+/// </summary>
 public class PlatformFactory : IPlatformFactory
 {
-    private PlatformsConfig _platformsConfig;
+    private readonly PlatformsConfig _platformsConfig;
 
     public PlatformFactory(PlatformsConfig platformsConfig)
     {
@@ -60,6 +63,7 @@ public class PlatformFactory : IPlatformFactory
         {
             throw new ArgumentException($"Platform prefab not found for type {platformType}");
         }
+
         var platform = GameObject.Instantiate(prefabInfo.gameObject, Vector3.down * 100, Quaternion.identity);
         return new GamePlatform(platformType, platform);
     }

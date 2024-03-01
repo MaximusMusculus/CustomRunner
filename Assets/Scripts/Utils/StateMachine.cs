@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Custom;
 using VContainer.Unity;
 
 
@@ -24,7 +25,7 @@ namespace StateMachine
     /// Написано в спешке, проверок на корректность ввода - почти нет.
     /// тестов тоже нет.
     /// </summary>
-    public class SimpleFsm : IFsm, ITickable, IFixedTickable
+    public class SimpleFsm : IFsm, ITickable, IFixedTickable, IResettable
     {
         private readonly Dictionary<string, IState> _states = new Dictionary<string, IState>();
         private readonly Dictionary<IState, List<Condition>> _fromState = new Dictionary<IState, List<Condition>>();
@@ -32,6 +33,7 @@ namespace StateMachine
 
         private IState _currentState;
         private readonly EmptyState _emptyState;
+        private IState _launchState;
 
         private ITickable _currentTickable;
         private IFixedTickable _currentFixedTickable;
@@ -90,7 +92,8 @@ namespace StateMachine
                 throw new ArgumentException("Fsm is launched");
             }
 
-            ChangeState(_states[name]);
+            _launchState = _states[name];
+            ChangeState(_launchState);
         }
 
         private void ChangeState(IState nextState)
@@ -118,6 +121,17 @@ namespace StateMachine
             }
         }
 
+        //хак
+        public bool CheckIsInState(string state)
+        {
+            return _currentState == _states[state];
+        }
+
+        public void Reset()
+        {
+            ChangeState(_launchState);
+        }
+
         public void Tick()
         {
             UpdateTransition();
@@ -128,5 +142,7 @@ namespace StateMachine
         {
             _currentFixedTickable.FixedTick();
         }
+
+    
     }
 }

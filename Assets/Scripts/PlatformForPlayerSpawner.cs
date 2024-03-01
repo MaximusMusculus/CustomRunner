@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Custom;
 using UnityEngine;
 using VContainer.Unity;
 
@@ -7,7 +8,7 @@ public interface IFollowTarget
 {
     void SetFollowTarget(Transform target);
 }
-public class PlatformForPlayerSpawner : ITickable, IFollowTarget
+public class PlatformForPlayerSpawner : ITickable, IFollowTarget, IResettable
 {
     private readonly IPlatformPool _platformPool;
     private readonly int _platformLenght;
@@ -15,7 +16,7 @@ public class PlatformForPlayerSpawner : ITickable, IFollowTarget
     private Transform _target;
     private float _position => _target.position.x;
     
-    private Queue<IPlatform> _activePlatforms = new Queue<IPlatform>();
+    private readonly Queue<IPlatform> _activePlatforms = new Queue<IPlatform>();
     private int _platformNumber;
     
     public PlatformForPlayerSpawner(IPlatformPool platformPool, PlatformsConfig config)
@@ -29,7 +30,6 @@ public class PlatformForPlayerSpawner : ITickable, IFollowTarget
     {
         _target = target;
     }
-    
     public void Tick()
     {
         if (_position + _platformLenght / 2f > _platformNumber * _platformLenght + _platformLenght / 2f - _safeZone)
@@ -52,5 +52,15 @@ public class PlatformForPlayerSpawner : ITickable, IFollowTarget
     private void DeletePrevPlatform()
     {
         _platformPool.ReleasePlatform(_activePlatforms.Dequeue());
+    }
+
+    public void Reset()
+    {
+        _platformNumber = 0;
+        foreach (var platform in _activePlatforms)
+        {
+            _platformPool.ReleasePlatform(platform);
+        }
+        _activePlatforms.Clear();
     }
 }

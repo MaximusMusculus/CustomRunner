@@ -24,7 +24,6 @@ public interface ICharacterFactory
     SimpleFsm CreatePlayerBehaviour(ICharacterContainer character);
 }
 
-
 /// <summary>
 /// Создает персонажа игрока из конфига.
 /// Так же создает поведение игрока (возможно его нужно вынести отдельно)
@@ -34,11 +33,11 @@ public class CharacterFactory : ICharacterFactory
     private readonly IInputAxis _inputAxis;
     private readonly IInputJump _inputJump;
     private readonly LayersConfig _layersConfig;
-
+    
     private const string StateRun = "Run";
     private const string StateJump = "Jump";
     private const string StateFall = "Fall";
-    private const string StateDead = "Dead";
+    public const string StateDead = "Dead";
 
     public CharacterFactory(IInputAxis inputAxis, IInputJump inputJump, LayersConfig layersConfig)
     {

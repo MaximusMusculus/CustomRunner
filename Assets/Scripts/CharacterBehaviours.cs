@@ -27,8 +27,6 @@ public class OverlapCircleChecker
         return false;
     }
 }
-
-
 public class CharacterFall : IState, ITickable, IFixedTickable
 {
     private readonly ICharacterContainer _character;

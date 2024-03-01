@@ -1738,6 +1738,16 @@ MonoBehaviour:
   autoRun: 1
   autoInjectGameObjects: []
   _virtualCamera: {fileID: 1583463487}
+  layersConfig:
+    ground:
+      serializedVersion: 2
+      m_Bits: 64
+    enemy:
+      serializedVersion: 2
+      m_Bits: 128
+    interaction:
+      serializedVersion: 2
+      m_Bits: 0
   _playerCharacterConfig:
     characterPrefabName: Player
     properties:
@@ -1748,13 +1758,7 @@ MonoBehaviour:
     - property: 2
       value: 9
   _platformsConfig: {fileID: 11400000, guid: 2920fa415c3611042a87a5d6d3991af8, type: 2}
-  layersConfig:
-    ground:
-      serializedVersion: 2
-      m_Bits: 64
-    enemy:
-      serializedVersion: 2
-      m_Bits: 128
+  _spawnPoint: {fileID: 1541382431}
 --- !u!4 &655875777
 Transform:
   m_ObjectHideFlags: 0
