@@ -1,16 +1,9 @@
 using Cinemachine;
+using Custom;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
-
-[System.Serializable]
-public class LayersConfig
-{
-    public LayerMask ground;
-    public LayerMask enemy;
-    public LayerMask interaction;
-}
 
 /// <summary>
 /// Корень композиции для уровня
@@ -38,11 +31,11 @@ public class LevelLifeScope : LifetimeScope
         
         builder.Register<SimpleCamera>(Lifetime.Singleton).As<IFollowTarget>();
         builder.Register<InputJump>(Lifetime.Singleton).As<IInputJump, ITickable>();
-        builder.Register<InputAxisFotTest>(Lifetime.Singleton).As<IInputAxis>(); //InputRunnerAxis
+        builder.Register<InputRunnerAxis>(Lifetime.Singleton).As<IInputAxis>(); //InputAxisFotTest
         builder.Register<PlatformFactory>(Lifetime.Singleton).As<IPlatformFactory>();
         builder.Register<CharacterFactory>(Lifetime.Singleton).As<ICharacterFactory>();
         builder.Register<PlatformPool>(Lifetime.Singleton).As<IPlatformPool, IInitializable>();
-        builder.Register<PlatformForPlayerSpawner>(Lifetime.Singleton).As<ITickable, IFollowTarget>();
+        builder.Register<PlatformForPlayerSpawner>(Lifetime.Singleton).As<ITickable, IFollowTarget, IResettable>();
         
         builder.RegisterEntryPoint<RunnerGame>();
     }
