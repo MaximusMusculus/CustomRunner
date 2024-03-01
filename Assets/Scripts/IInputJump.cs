@@ -20,7 +20,7 @@ public class InputJump : IInputJump, ITickable
     }
     public void Tick()
     {
-        _isJump = Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0);
+        _isJump = Input.GetKey(KeyCode.Space) || Input.GetMouseButtonDown(0);
     }
 }
 public class InputRunnerAxis : IInputAxis

@@ -112,7 +112,6 @@ namespace StateMachine
                     {
                         continue;
                     }
-
                     var nextState = _toState[condition];
                     ChangeState(nextState);
                 }

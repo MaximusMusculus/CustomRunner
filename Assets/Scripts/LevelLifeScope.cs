@@ -4,13 +4,20 @@ using UnityEngine;
 using VContainer;
 using VContainer.Unity;
 
+
+[System.Serializable]
+public class LayersConfig
+{
+    public LayerMask ground;
+    public LayerMask enemy;
+
+}
 public class LevelLifeScope : LifetimeScope
 {
     [SerializeField] private CinemachineVirtualCamera _virtualCamera;
     [SerializeField] private CharacterContainer _player;
     [SerializeField] private PlatformsConfig _platformsConfig;
-    [SerializeField] private LayerMask _ground;
-    [SerializeField] private LayerMask _enemy;
+    [SerializeField] private LayersConfig layersConfig;
     
     protected override void Configure(IContainerBuilder builder)
     {
@@ -18,7 +25,7 @@ public class LevelLifeScope : LifetimeScope
         
         builder.RegisterInstance(_virtualCamera).AsSelf();
         builder.RegisterInstance(_platformsConfig).AsSelf();
-        builder.RegisterInstance(_ground);
+        builder.RegisterInstance(layersConfig);
         
         
         builder.Register<SimpleCamera>(Lifetime.Singleton).As<ICamera>();
@@ -27,7 +34,6 @@ public class LevelLifeScope : LifetimeScope
         builder.Register<PlatformFactory>(Lifetime.Singleton).As<IPlatformFactory>();
         builder.Register<PlatformPool>(Lifetime.Singleton).As<IPlatformPool, IInitializable>();
         builder.Register<PlatformForPlayerSpawner>(Lifetime.Singleton).As<ITickable>();
-        
         
 
         builder.RegisterInstance<ICharacterContainer>(_player);
