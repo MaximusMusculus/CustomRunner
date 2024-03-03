@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
-using Custom;
 using VContainer.Unity;
 
 
-namespace StateMachine
+namespace Core
 {
     public interface IState
     {

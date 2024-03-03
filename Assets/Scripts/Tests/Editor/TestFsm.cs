@@ -1,7 +1,8 @@
-﻿using NUnit.Framework;
-using StateMachine;
+﻿using Core;
+using NUnit.Framework;
 using UnityEngine;
 using VContainer.Unity;
+
 
 /// <summary>
 /// тут должен быть тыст для фсм, но его нет ))

@@ -1,5 +1,5 @@
 using Cinemachine;
-using Custom;
+using Core;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
@@ -34,8 +34,7 @@ public class LevelLifeScope : LifetimeScope
         builder.RegisterInstance(new SimplePlayerSpawnPoint(_spawnPoint)).As<IPlayerSpawnPoint>();
         
         builder.Register<SimpleCamera>(Lifetime.Singleton).As<IFollowTarget>();
-        builder.Register<InputJump>(Lifetime.Singleton).As<IInputJump, ITickable>();
-        builder.Register<InputRunnerAxis>(Lifetime.Singleton).As<IInputAxis>(); //InputAxisFotTest
+        builder.Register<Input>(Lifetime.Singleton).As<IInput, ITickable>();
         builder.Register<PlatformFactory>(Lifetime.Singleton).As<IPlatformFactory>();
         builder.Register<CharacterFactory>(Lifetime.Singleton).As<ICharacterFactory>();
         builder.Register<PlatformPool>(Lifetime.Singleton).As<IPlatformPool, IInitializable>();

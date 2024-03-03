@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Custom
+namespace Core
 {
     public interface IResettable
     {

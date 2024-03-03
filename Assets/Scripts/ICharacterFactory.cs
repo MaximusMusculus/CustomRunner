@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using Core;
 using Cysharp.Threading.Tasks;
-using StateMachine;
+using Game.Controllers.Behaviour;
+using Game.Shared;
 using UnityEngine;
 
 
@@ -8,14 +10,7 @@ using UnityEngine;
 public class CharacterConfig
 {
     public string characterPrefabName;
-    public List<PropertyInfo> properties;
-
-    [System.Serializable]
-    public class PropertyInfo
-    {
-        public FloatProperty property;
-        public float value;
-    }
+    public List<PropertyData> properties;
 }
 
 public interface ICharacterFactory
@@ -30,8 +25,7 @@ public interface ICharacterFactory
 /// </summary>
 public class CharacterFactory : ICharacterFactory
 {
-    private readonly IInputAxis _inputAxis;
-    private readonly IInputJump _inputJump;
+    private readonly IInput _input;
     private readonly LayersConfig _layersConfig;
     
     private const string StateRun = "Run";
@@ -39,10 +33,9 @@ public class CharacterFactory : ICharacterFactory
     private const string StateFall = "Fall";
     public const string StateDead = "Dead";
 
-    public CharacterFactory(IInputAxis inputAxis, IInputJump inputJump, LayersConfig layersConfig)
+    public CharacterFactory(IInput input, LayersConfig layersConfig)
     {
-        _inputAxis = inputAxis;
-        _inputJump = inputJump;
+        _input = input;
         _layersConfig = layersConfig;
     }
 
@@ -51,14 +44,14 @@ public class CharacterFactory : ICharacterFactory
         var characterPrefab = LoadPrefab(config.characterPrefabName);
         var character = Spawn(characterPrefab);
         var view = character.GetComponent<CharacterView>();
-        var baseValues = new Properties();
+        /*var baseValues = new Properties();
         foreach (var info in config.properties)
         {
             baseValues.Set(info.property, info.value);
-        }
+        }*/
 
         await UniTask.Yield();
-        var characterContainer = new CharacterContainer(view.Rigidbody, view.Animator, baseValues, new ModifyProperties(baseValues));
+        var characterContainer = new CharacterContainer(view.Rigidbody, view.Animator);
         return characterContainer;
     }
 
@@ -68,14 +61,14 @@ public class CharacterFactory : ICharacterFactory
         var enemyHitChecker = new OverlapCircleChecker(character, _layersConfig.enemy, 0.6f);
 
         var fsm = new SimpleFsm();
-        var jumpState = new CharacterJump(character, _inputAxis);
+        var jumpState = new CharacterJump(character, _input);
 
-        fsm.AddState(StateRun, new CharacterRun(character, _inputAxis));
+        fsm.AddState(StateRun, new CharacterRun(character, _input));
         fsm.AddState(StateJump, jumpState);
-        fsm.AddState(StateFall, new CharacterFall(character, _inputAxis));
+        fsm.AddState(StateFall, new CharacterFall(character, _input));
         fsm.AddState(StateDead, new CharacterDead(character));
 
-        fsm.AddTransition(StateRun, StateJump, _inputJump.GetIsJump);
+        fsm.AddTransition(StateRun, StateJump, _input.GetIsJump);
         fsm.AddTransition(StateRun, StateFall, () => !groundChecker.Check());
 
         fsm.AddTransition(StateJump, StateFall, jumpState.IsJumpEnd);
