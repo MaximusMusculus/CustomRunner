@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using Game.Shared;
 
@@ -52,10 +53,20 @@ namespace Game.Properties
     
 
 
+    public interface IPropertyComponent 
+    {
+        float GetValue(CharacterProperty characterProperty);
+        bool Has(CharacterProperty characterProperty);
+
+        void AddModifier(CharacterProperty characterProperty, BaseProperty modifier);
+        void RemoveModifier(CharacterProperty characterProperty, BaseProperty modifier);
+    }
+    
+    
     /// <summary>
     /// Контейнер свойств объекта с возможностью добавлять модификаторы
     /// </summary>
-    public class PropertyHolder
+    public class PropertyComponent : IPropertyComponent
     {
         private readonly Dictionary<CharacterProperty, ModifiedProperty> _properties = new Dictionary<CharacterProperty, ModifiedProperty>();
 
