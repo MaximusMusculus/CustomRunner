@@ -13,6 +13,8 @@ namespace TestEffects
     {
         //base interfaces
         //базовый скелет сущности и компонента
+        
+        public interface IDefinition { }
         private interface IEntity{}
         private interface IEntityContainer : IEntity, IDisposable
         {
@@ -39,20 +41,31 @@ namespace TestEffects
             void AddModifier(CharacterProperty characterProperty, BaseProperty modifier);
             void RemoveModifier(CharacterProperty characterProperty, BaseProperty modifier);
         }
-        private interface IEffect : IUpdate, IDisposable
+        private interface IEffect : IUpdate
         {
-            void Start(IEntityContainer entityContainer);
-            void End(IEntityContainer entityContainer);
+            void ApplyTo(IEntityContainer entityContainer);
+            void RemoveFrom(IEntityContainer entityContainer);
             //Tick(deltaTime);
             bool CanApply(IEntityContainer entityContainer);
             bool IsDone { get; }
         }
+        public interface IEffectDefinition : IDefinition { }
+        
         private interface IEffects : IComponent, IUpdate
         {
             void AddEffect(IEffect effect);
+            void AddEffect(IEffectDefinition definition);
         }
 
- 
+        private abstract class EffectFactory<TDefinition> where TDefinition : IDefinition
+        {
+            //что является моделью описания? -> созданный класс? Или id?
+            public abstract IEffect Create(TDefinition effectConfig);
+        }
+        
+        
+
+
         //concrete imp hierarchy
         //мышцы и сухожилия - крепятся к скелету, снабжаются кровью
         private class ComponentsFactory : IComponentFactory
@@ -111,68 +124,75 @@ namespace TestEffects
                 GetProperty(characterProperty).RemoveModifier(modifier);
             }
         }
+        
+        
+        
+        
+        /// <summary>
+        /// Знает про эффекты ВСЕ, кроме создания - этим занимается фабрика 
+        /// Компонент обрабатывающий эффекты. Порождает эффекты, обновляет, следит за их состоянием, удаляет, диспоузит те, что нужно
+        /// Может использовать пул, так как, кроме него никто не может породить эффект.
+        /// Так же может выдать список эффектов, список отфильтрованных эффектов
+        /// может прогнать по эффектам визитора (если потребуется).
+        ///
+        /// Кстати, при создании может принять некие "правила" для эффектов, какой эффект замещает другой, какой эффект  обновляет время действия и тд.
+        /// </summary>
         private class Effects : IEffects
         {
-            private readonly List<IEffect> _effects = new List<IEffect>();
+            private readonly List<IEffect> _processEffects = new List<IEffect>();
             private readonly List<IEffect> _doneEffects = new List<IEffect>();
-            //iEffectsEventDispatcher
-
-            private IEntityContainer _owner; //как внедрить контейнер, в котором я нахожусь?
+            private IEntityContainer _target; //как внедрить контейнер, в котором я нахожусь?
+            
+            //-сюда внедрить пул, фабрику. Порождать эффекты здесь, нести за эффекты ответственность. 
+            // когда эффекты кончаются - закидывать в пул.
 
             /// <summary>
             /// Если какая либо логика взаимодействует с другими компонентами сервисами, то передаем контейнер, с которого получаем нужные сервисы
             /// Если конкретно этот сервис не требует именно контейнер, есму нужны глобальная шина событий 
             /// тут 
             /// </summary>
-            /// <param name="ownerEntity"></param>
-            public Effects(IEntityContainer ownerEntity)
+            /// <param name="targetEntity"></param>
+            public Effects(IEntityContainer targetEntity)
             {
-                _owner = ownerEntity;
+                _target = targetEntity;
             }
             
-            public void Dispose()
+            public void AddEffect(IEffect effect) //config + args?
             {
-                foreach (var effect in _effects)
-                {
-                    effect.End(_owner); // нужен ли?
-                }
-                _effects.Clear();
-                _owner = null;
+                _processEffects.Add(effect);
+                effect.ApplyTo(_target);
             }
 
-            public void AddEffect(IEffect effect)
+            public void AddEffect(IEffectDefinition definition)
             {
-                _effects.Add(effect);
-                effect.Start(_owner);
+                throw new NotImplementedException();
             }
+            //CancelEffect(id), or Rules(), orFilter();  
+            
 
             public void Update(float deltaTime)
             {
-                foreach (var effect in _effects)
+                foreach (var effect in _processEffects)
                 {
                     effect.Update(deltaTime);
                     if (effect.IsDone)
                     {
-                        effect.End(_owner);
+                        effect.RemoveFrom(_target);
                         _doneEffects.Add(effect);
                     }
                 }
-
+                
                 foreach (var doneEffect in _doneEffects)
                 {
-                    _effects.Remove(doneEffect);
-                    if (doneEffect is IDisposable disposableEffect)
-                    {
-                        disposableEffect.Dispose();
-                    }
+                    _processEffects.Remove(doneEffect);
                     //DispatchEffectDone? + _entityContainer
                 }
-
                 _doneEffects.Clear();
             }
         }
-        
-        
+
+
+
         //concrete 
         //все, что ниже - это конкретика и может переписываться и переконфигурироваться. 
         //кожа, жирок, волосяной покров, косметика и т.д
@@ -226,7 +246,7 @@ namespace TestEffects
                 _time = time;
             }
             
-            public void Start(IEntityContainer entityContainer)
+            public void ApplyTo(IEntityContainer entityContainer)
             {
                 if (entityContainer.TryGetComponent(out IProperties properties))
                 {
@@ -235,7 +255,7 @@ namespace TestEffects
                 }
             }
             
-            public void End(IEntityContainer entityContainer)
+            public void RemoveFrom(IEntityContainer entityContainer)
             {
                 if (entityContainer.TryGetComponent(out IProperties properties))
                 {
@@ -287,7 +307,7 @@ namespace TestEffects
         }
         
         //сли эффект подписывается на что либо, он вызывает отписку сам
-        private class EventEndEffect : IEffect
+        private class EventEndEffect : IEffect, IDisposable
         {
             private readonly PrimitiveGlobalEventBus _bus;
             private bool _isDone;
@@ -313,12 +333,12 @@ namespace TestEffects
             {
             }
 
-            public void Start(IEntityContainer entityContainer)
+            public void ApplyTo(IEntityContainer entityContainer)
             {
                 Debug.Log("apply eventEffect");
             }
 
-            public void End(IEntityContainer entityContainer)
+            public void RemoveFrom(IEntityContainer entityContainer)
             {
                 Debug.Log("cancel event effect");
             }
@@ -329,7 +349,7 @@ namespace TestEffects
             }
         }
         
-        private class GlobalListenerEffect : IEffect 
+        private class GlobalListenerEffect : IEffect , IDisposable
         {
             private readonly IDisposable _disposable;
             
@@ -360,12 +380,12 @@ namespace TestEffects
                 throw new NotImplementedException();
             }
 
-            public void Start(IEntityContainer entityContainer)
+            public void ApplyTo(IEntityContainer entityContainer)
             {
                 throw new NotImplementedException();
             }
 
-            public void End(IEntityContainer entityContainer)
+            public void RemoveFrom(IEntityContainer entityContainer)
             {
                 throw new NotImplementedException();
             }
@@ -378,10 +398,9 @@ namespace TestEffects
             public bool IsDone { get; }
         }
 
-        //CompositeEffectBuilder.
-        //.addTrigger()
-        //.addModify()
-        private class CompositeEffect : IEffect
+        
+        //CompositeEffectBuilder.addTrigger().addModify()
+        private class CompositeEffect : IEffect, IDisposable
         {
             //iTrigger = triggerFactory.Create(type, params);
             //iModifier = modifiersFactory.Create(type, params)
@@ -393,12 +412,12 @@ namespace TestEffects
                 throw new NotImplementedException();
             }
 
-            public void Start(IEntityContainer entityContainer)
+            public void ApplyTo(IEntityContainer entityContainer)
             {
                 throw new NotImplementedException();
             }
 
-            public void End(IEntityContainer entityContainer)
+            public void RemoveFrom(IEntityContainer entityContainer)
             {
                 throw new NotImplementedException();
             }
@@ -410,9 +429,8 @@ namespace TestEffects
 
             public bool IsDone { get; }
 
-            public void Dispose()
-            {
-            }
+            //--
+            public void Dispose() { }
         }
         
         
@@ -420,6 +438,8 @@ namespace TestEffects
         public void TestDispose()
         {
             //надо понять что есть диспоуз и когда он вызывается. По сути при диспозе будет отписка от событий.
+            //За объект ответсвеннен тот, кто его создал.
+            
             var eventBus = new PrimitiveGlobalEventBus();
             var componentFactory = new ComponentsFactory();
             var character = new ConcreteCharacter(componentFactory);
