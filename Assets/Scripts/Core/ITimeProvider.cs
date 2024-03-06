@@ -1,6 +1,5 @@
-namespace Core
+﻿namespace Core
 {
-    
     /// <summary>
     /// Представляет интерфейс для получения времени
     /// </summary>
@@ -11,13 +10,5 @@ namespace Core
         //FixedDeltaTime
         //UnscaledDeltaTime
         //...
-    }
-    
-    /// <summary>
-    /// Интерфейс для обновления объекта playerloop 
-    /// </summary>
-    public interface IUpdate
-    {
-        void Update(float deltaTime);
     }
 }

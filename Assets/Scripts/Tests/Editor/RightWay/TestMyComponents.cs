@@ -39,7 +39,7 @@ namespace TestEffects
             void AddModifier(CharacterProperty characterProperty, BaseProperty modifier);
             void RemoveModifier(CharacterProperty characterProperty, BaseProperty modifier);
         }
-        private interface IEffect : IUpdate
+        private interface IEffect : IUpdate, IDisposable
         {
             void Start(IEntityContainer entityContainer);
             void End(IEntityContainer entityContainer);
@@ -287,7 +287,7 @@ namespace TestEffects
         }
         
         //сли эффект подписывается на что либо, он вызывает отписку сам
-        private class EventEndEffect : IEffect, IDisposable //отписка от событий
+        private class EventEndEffect : IEffect
         {
             private readonly PrimitiveGlobalEventBus _bus;
             private bool _isDone;
@@ -300,6 +300,7 @@ namespace TestEffects
             public void Dispose()
             {
                 _bus.OnEvent -= BusOnOnEvent;
+                //_disposable.Dispose();
             }
 
             private void BusOnOnEvent()
@@ -328,7 +329,7 @@ namespace TestEffects
             }
         }
         
-        private class GlobalListenerEffect : IEffect , IDisposable
+        private class GlobalListenerEffect : IEffect 
         {
             private readonly IDisposable _disposable;
             
@@ -377,10 +378,15 @@ namespace TestEffects
             public bool IsDone { get; }
         }
 
-        private class CustomConfigEffect : IEffect
+        //CompositeEffectBuilder.
+        //.addTrigger()
+        //.addModify()
+        private class CompositeEffect : IEffect
         {
             //iTrigger = triggerFactory.Create(type, params);
             //iModifier = modifiersFactory.Create(type, params)
+            //EffectFactory.Create(configEffect,entityContainer);
+            //
 
             public void Update(float deltaTime)
             {
@@ -403,6 +409,10 @@ namespace TestEffects
             }
 
             public bool IsDone { get; }
+
+            public void Dispose()
+            {
+            }
         }
         
         

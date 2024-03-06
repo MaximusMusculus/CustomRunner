@@ -19,27 +19,27 @@ namespace TestEffects
         //??..
     }
     
-    public interface IModifier
+    public interface ITestModifier
     {
         void Apply();
         void Cancel();
     }
 
     //BaseModifier -> concreteModifier
-    public abstract class Modifier : IUpdate, IModifier
+    public abstract class TestTestModifier : IUpdate, ITestModifier
     {
         public virtual void Update(float deltaTime) { }
         public abstract void Apply();
         public abstract void Cancel();
     }
     
-    public class PropertyModifier : Modifier
+    public class TestTestPropertyTestTestModifier : TestTestModifier
     {
         private readonly CharacterProperty _property;
         private readonly PropertyComponent _propertyComponent;
         private readonly BaseProperty _propertyModifier;
 
-        public PropertyModifier(PropertyComponent propertyComponent, CharacterProperty property, float value, float multiplier) 
+        public TestTestPropertyTestTestModifier(PropertyComponent propertyComponent, CharacterProperty property, float value, float multiplier) 
         {
             _property = property;
             _propertyComponent = propertyComponent;
@@ -57,7 +57,7 @@ namespace TestEffects
         }
     }
     
-    public abstract class Effect : IUpdate
+    public abstract class TestEffect : IUpdate
     {
         public virtual void Update(float deltaTime) { }
         public virtual bool IsCanApply() { return true; }
@@ -68,25 +68,25 @@ namespace TestEffects
 
 
     //can reset ->
-    public class EffectSimple : Effect
+    public class TestTestEffectSimple : TestEffect
     {
         private readonly CheckCondition _endCondition;
-        private readonly Modifier _modifier;
+        private readonly TestTestModifier _testTestModifier;
 
-        public EffectSimple(PropertyComponent propertyComponent, CharacterProperty property, float value, float multiplier, float duration)
+        public TestTestEffectSimple(PropertyComponent propertyComponent, CharacterProperty property, float value, float multiplier, float duration)
         {
             _endCondition = new CheckElapsedTime(duration);
-            _modifier = new PropertyModifier(propertyComponent, property, value, multiplier);
+            _testTestModifier = new TestTestPropertyTestTestModifier(propertyComponent, property, value, multiplier);
         }
 
         public override void Apply()
         {
-            _modifier.Apply();  //где будут находится правила наложения модификаторов (не накладывать 100-500 одинаковых)
+            _testTestModifier.Apply();  //где будут находится правила наложения модификаторов (не накладывать 100-500 одинаковых)
         }
 
         public override void Cancel()
         {
-            _modifier.Cancel();
+            _testTestModifier.Cancel();
         }
         
         public override bool IsDone()
@@ -97,7 +97,7 @@ namespace TestEffects
         public override void Update(float deltaTime)
         {
             _endCondition.Update(deltaTime);
-            _modifier.Update(deltaTime);
+            _testTestModifier.Update(deltaTime);
         }
     }
     
@@ -106,26 +106,26 @@ namespace TestEffects
 
 
     //-- конкретный эффект на основе энама. для упрощения создания
-    public class ConditionEffect : Effect
+    public class TestConditionTestEffect : TestEffect
     {
         private readonly CheckCondition _endCondition;
-        private readonly Modifier _modifier;
+        private readonly TestTestModifier _testTestModifier;
 
-        public ConditionEffect(CheckCondition endCondition, Modifier modifier)
+        public TestConditionTestEffect(CheckCondition endCondition, TestTestModifier testTestModifier)
         {
             _endCondition = endCondition;
-            _modifier = modifier;
+            _testTestModifier = testTestModifier;
         }
         
         public override void Apply()
         {
             _endCondition.Reset();
-            _modifier.Apply();  //где будут находится правила наложения модификаторов (не накладывать 100-500 одинаковых)
+            _testTestModifier.Apply();  //где будут находится правила наложения модификаторов (не накладывать 100-500 одинаковых)
         }
 
         public override void Cancel()
         {
-            _modifier.Cancel();
+            _testTestModifier.Cancel();
         }
         
         public override bool IsDone()
@@ -136,7 +136,7 @@ namespace TestEffects
         public override void Update(float deltaTime)
         {
             _endCondition.Update(deltaTime);
-            _modifier.Update(deltaTime);
+            _testTestModifier.Update(deltaTime);
         }
     }
     
@@ -146,15 +146,15 @@ namespace TestEffects
     //CreateEffect->config+target
     /// как быть с правилами наложения эффектов? В конфиге? А как быть с эффектами, которые отменяют друг друга?
     /// нужен список эффектов на объекте, по типу холдера Параметров ()
-    public class EffectsService : IUpdate // iBroadcastReceiver
+    public class TestEffectsService : IUpdate // iBroadcastReceiver
     {
-        private readonly List<Effect> _newEffects = new List<Effect>();
-        private readonly List<Effect> _effects = new List<Effect>();
-        private readonly List<Effect> _doneEffects = new List<Effect>();
+        private readonly List<TestEffect> _newEffects = new List<TestEffect>();
+        private readonly List<TestEffect> _effects = new List<TestEffect>();
+        private readonly List<TestEffect> _doneEffects = new List<TestEffect>();
 
-        public void AddEffect(Effect effect) //target + rules (effectId) не добавлять тот же эффект?
+        public void AddEffect(TestEffect testEffect) //target + rules (effectId) не добавлять тот же эффект?
         {
-            _newEffects.Add(effect);
+            _newEffects.Add(testEffect);
         }
         
         public void Update(float deltaTime)
@@ -185,7 +185,7 @@ namespace TestEffects
         }
 
         //разобрать эффект и(или) отправить его в пул
-         protected virtual void DisposeEffect(Effect effect)
+         protected virtual void DisposeEffect(TestEffect testEffect)
         {
         }
 
@@ -224,8 +224,8 @@ namespace TestEffects
         [Test]
         public void TestTimedSpeedUp()
         {
-            var effect = new ConditionEffect(new CheckElapsedTime(EffectTime), new PropertyModifier(_propertyComponent, CharacterProperty.Speed, 1, 0));
-            var service = new EffectsService();
+            var effect = new TestConditionTestEffect(new CheckElapsedTime(EffectTime), new TestTestPropertyTestTestModifier(_propertyComponent, CharacterProperty.Speed, 1, 0));
+            var service = new TestEffectsService();
             service.AddEffect(effect);
             service.Update(0.5f);
             Assert.AreEqual(Speed + 1, _propertyComponent.GetValue(CharacterProperty.Speed));
