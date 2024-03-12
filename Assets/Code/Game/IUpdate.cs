@@ -7,4 +7,9 @@ namespace Core
     {
         void Update(float deltaTime);
     }
+
+    public interface IFixedUpdate
+    {
+        void FixedUpdate();
+    }
 }

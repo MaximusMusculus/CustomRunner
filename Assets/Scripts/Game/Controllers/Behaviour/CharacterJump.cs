@@ -1,28 +1,34 @@
-using System;
 using Core;
 using Game.Animations;
+using Game.Components;
 using UnityEngine;
 using VContainer.Unity;
 
 namespace Game.Controllers.Behaviour
 {
-    public class CharacterJump : IState, ITickable, IFixedTickable
+    public class CharacterJump : IState, ITickable
     {
         private readonly ICharacterContainer _character;
         private readonly IInput _inputAxis;
         private float _moveSpeed;
         private float _jumpSpeed;
 
+        private IMoveComponent _moveComponent;
+
         public CharacterJump(ICharacterContainer character, IInput inputAxis)
         {
             _character = character;
             _inputAxis = inputAxis;
+            if (!character.TryGetComponent(out _moveComponent))
+            {
+                throw new System.Exception("CharacterJump: character does not have move component");
+            }
         }
 
         public void Enter()
         {
-            _jumpSpeed = 5;// _character.Values.Get(CharacterProperty.JumpSpeed);
-            throw new NotImplementedException();
+            _jumpSpeed = 7;// _character.Values.Get(CharacterProperty.JumpSpeed);
+            //throw new NotImplementedException();
             
             _character.Animator.SetTrigger(AnimationConstants.OnJump);
             _character.Animator.SetBool(AnimationConstants.IsGrounded, false);
@@ -34,18 +40,18 @@ namespace Game.Controllers.Behaviour
 
         public void Tick()
         {
-            _jumpSpeed += Physics2D.gravity.y * Time.deltaTime;
             _moveSpeed = 5; // _character.Values.Get(CharacterProperty.RunSpeed);
-            throw new NotImplementedException();
+            _jumpSpeed += Physics2D.gravity.y * Time.deltaTime;
+
+            var moveSpeed = new Vector2(_inputAxis.GetAxis().x, 0) * _moveSpeed;
+            var jumpSpeed = Vector2.up * _jumpSpeed;
+            var moveDirection = moveSpeed + jumpSpeed;
+            
+            var distance = moveDirection.magnitude;
+            _moveComponent.Move(moveDirection.normalized * distance);
         }
 
-        public void FixedTick()
-        {
-            var jumpDirection = new Vector2(_inputAxis.GetAxis().x, 0) * Time.fixedDeltaTime * _moveSpeed;
-            var moveDirection = Vector2.up * (_jumpSpeed * Time.fixedDeltaTime) + jumpDirection;
-            var distance = moveDirection.magnitude;
-            _character.Rigidbody.position += moveDirection.normalized * distance;
-        }
+
 
         public bool IsJumpEnd()
         {

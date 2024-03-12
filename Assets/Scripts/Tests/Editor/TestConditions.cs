@@ -77,20 +77,20 @@ namespace TestConditions
         public void Setup()
         {
             _component = new PropertyComponent();
-            _component.AddProperty(CharacterProperty.Speed, 5);
-            _component.AddProperty(CharacterProperty.FlyHeight, 0);
+            _component.AddProperty(TypeProperty.Speed, 5);
+            _component.AddProperty(TypeProperty.FlyHeight, 0);
         }
         
         [Test]
         public void TestCheckPropertyCondition()
         {
-            var condition = new CheckProperty(_component, CharacterProperty.Speed, TypeCompare.GreaterThan, 5);
+            var condition = new CheckProperty(_component, TypeProperty.Speed, TypeCompare.GreaterThan, 5);
             Assert.IsFalse(condition.Check());
 
             var modifier = new BaseProperty(1, 0);
-            _component.AddModifier(CharacterProperty.Speed, modifier);
+            _component.AddModifier(TypeProperty.Speed, modifier);
             Assert.IsTrue(condition.Check());
-            _component.RemoveModifier(CharacterProperty.Speed, modifier);//можон сократить
+            _component.RemoveModifier(TypeProperty.Speed, modifier);//можон сократить
             Assert.IsFalse(condition.Check());
         }
         

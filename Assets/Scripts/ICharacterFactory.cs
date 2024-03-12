@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using Core;
 using Cysharp.Threading.Tasks;
+using Game.Components;
 using Game.Controllers.Behaviour;
-using Game.Shared;
 using UnityEngine;
 
 
@@ -11,6 +11,10 @@ public class CharacterConfig
 {
     public string characterPrefabName;
     public List<PropertyData> properties;
+}
+
+public class PropertyData
+{
 }
 
 public interface ICharacterFactory
@@ -57,8 +61,9 @@ public class CharacterFactory : ICharacterFactory
 
     public SimpleFsm CreatePlayerBehaviour(ICharacterContainer character) //+? behaviourConfg
     {
-        var groundChecker = new OverlapCircleChecker(character, _layersConfig.ground, 0.85f);
         var enemyHitChecker = new OverlapCircleChecker(character, _layersConfig.enemy, 0.6f);
+        character.TryGetComponent<IMoveComponent>(out var moveComponent);
+        
 
         var fsm = new SimpleFsm();
         var jumpState = new CharacterJump(character, _input);
@@ -69,20 +74,21 @@ public class CharacterFactory : ICharacterFactory
         fsm.AddState(StateDead, new CharacterDead(character));
 
         fsm.AddTransition(StateRun, StateJump, _input.GetIsJump);
-        fsm.AddTransition(StateRun, StateFall, () => !groundChecker.Check());
+        fsm.AddTransition(StateRun, StateFall, () => !moveComponent.IsOnGround);
 
         fsm.AddTransition(StateJump, StateFall, jumpState.IsJumpEnd);
-        fsm.AddTransition(StateFall, StateRun, groundChecker.Check);
+        fsm.AddTransition(StateFall, StateRun, () => moveComponent.IsOnGround);
 
         //добавить any state
         fsm.AddTransition(StateRun, StateDead, () => enemyHitChecker.Check());
         fsm.AddTransition(StateJump, StateDead, () => enemyHitChecker.Check());
-        fsm.AddTransition(StateFall, StateDead, () => enemyHitChecker.Check());
+        fsm.AddTransition(StateFall, StateDead, () =>  enemyHitChecker.Check());
 
         fsm.LaunchState(StateRun);
 
         return fsm;
     }
+
 
 
     /// Загрузку префаба нужно делегировать отдельной системме

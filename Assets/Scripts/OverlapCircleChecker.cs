@@ -16,7 +16,7 @@ public class OverlapCircleChecker
 
     public bool Check()
     {
-        var count = Physics2D.OverlapCircleNonAlloc(_character.Rigidbody.position, _radius, results, _groundLayer);
+        var count = Physics2D.OverlapCircleNonAlloc(_character.MoveComponent.Position, _radius, results, _groundLayer);
         if (count > 0)
         {
             return true;

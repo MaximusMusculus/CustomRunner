@@ -10,21 +10,21 @@ namespace Game.Conditions.Implementations
     public class CheckProperty : CheckCondition
     {
         private readonly PropertyComponent _propertyComponent;
-        private readonly CharacterProperty _characterProperty;
+        private readonly TypeProperty _typeProperty;
         private readonly TypeCompare _typeCompare;
         private readonly float _value;
         
-        public CheckProperty(PropertyComponent propertyComponent, CharacterProperty characterProperty, TypeCompare typeCompare, float value)
+        public CheckProperty(PropertyComponent propertyComponent, TypeProperty typeProperty, TypeCompare typeCompare, float value)
         {
             _propertyComponent = propertyComponent;
-            _characterProperty = characterProperty;
+            _typeProperty = typeProperty;
             _typeCompare = typeCompare;
             _value = value;
         }
 
         public override bool Check()
         {
-            return _propertyComponent.GetValue(_characterProperty).CheckCompareIsTrue(_typeCompare, _value);
+            return _propertyComponent.GetValue(_typeProperty).CheckCompareIsTrue(_typeCompare, _value);
         }
     }
 }

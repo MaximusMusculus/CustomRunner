@@ -58,10 +58,12 @@ public class RunnerGame : IAsyncStartable, ITickable, IFixedTickable
     public void Tick()
     {
         _gameFsm.Tick();
+        _gameContext.CharacterContainer.Tick();
     }
 
     public void FixedTick()
     {
+        _gameContext?.CharacterContainer?.FixedTick();
         _gameFsm.FixedTick();
     }
 
@@ -106,12 +108,12 @@ public class RunnerGame : IAsyncStartable, ITickable, IFixedTickable
         
         public void Enter()
         {
-            Character.Rigidbody.position = _playerSpawnPoint.GetPlayerSpawnPoint();
+            Character.MoveComponent.Position = _playerSpawnPoint.GetPlayerSpawnPoint();
             CharacterBehaviour.Reset();
 
             foreach (var followTarget in _followTargets)
             {
-                followTarget.SetFollowTarget(Character.Rigidbody.transform);
+                followTarget.SetFollowTarget(Character.MoveComponent.Transform);
             }
             
             foreach (var resettable in _resettables)

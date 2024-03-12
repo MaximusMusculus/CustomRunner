@@ -1750,13 +1750,6 @@ MonoBehaviour:
       m_Bits: 0
   _playerCharacterConfig:
     characterPrefabName: Player
-    properties:
-    - property: 0
-      value: 5
-    - property: 1
-      value: 6
-    - property: 2
-      value: 9
   _platformsConfig: {fileID: 11400000, guid: 2920fa415c3611042a87a5d6d3991af8, type: 2}
   _spawnPoint: {fileID: 1541382431}
 --- !u!4 &655875777
@@ -1955,7 +1948,7 @@ MonoBehaviour:
   m_ScreenY: 0.704
   m_CameraDistance: 10
   m_DeadZoneWidth: 0.1
-  m_DeadZoneHeight: 0.1
+  m_DeadZoneHeight: 0.3
   m_DeadZoneDepth: 0
   m_UnlimitedSoftZone: 0
   m_SoftZoneWidth: 0.8

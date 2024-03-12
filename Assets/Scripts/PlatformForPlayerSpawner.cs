@@ -13,8 +13,9 @@ public class PlatformForPlayerSpawner : ITickable, IFollowTarget, IResettable
     private readonly IPlatformPool _platformPool;
     private readonly int _platformLenght;
     private readonly int _safeZone;
-    private Transform _target;
-    private float _position => _target.position.x;
+
+    private Transform _followTarget;
+    private float Position => _followTarget.position.x;
     
     private readonly Queue<IPlatform> _activePlatforms = new Queue<IPlatform>();
     private int _platformNumber;
@@ -28,11 +29,12 @@ public class PlatformForPlayerSpawner : ITickable, IFollowTarget, IResettable
     
     public void SetFollowTarget(Transform target)
     {
-        _target = target;
+        _followTarget = target;
     }
+    
     public void Tick()
     {
-        if (_position + _platformLenght / 2f > _platformNumber * _platformLenght + _platformLenght / 2f - _safeZone)
+        if (Position + _platformLenght / 2f > _platformNumber * _platformLenght + _platformLenght / 2f - _safeZone)
         {
             SpawnNextPlatform();
             if (_activePlatforms.Count > 3)
@@ -77,4 +79,6 @@ public class PlatformForPlayerSpawner : ITickable, IFollowTarget, IResettable
         }
         _activePlatforms.Clear();
     }
+
+
 }
