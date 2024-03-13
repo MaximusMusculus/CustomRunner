@@ -1,62 +1,73 @@
 using System;
 using System.Collections.Generic;
-using VContainer.Unity;
-
+using UnityEngine;
 
 namespace Core
 {
-    public interface IState
+    public interface IBehaviour : IUpdate
     {
-        void Enter();
-        void Exit();
+        void Activate();
+        void Deactivate();
     }
     
-    
-    public interface IFsm
+    public class EmptyBehaviour : IBehaviour, IFixedUpdate
     {
-        void AddState(string name, IState state);
+        public void Activate() { }
+        public void Deactivate() { }
+        public void Update(float deltaTime) { }
+        public void FixedUpdate() { }
+    }
+
+
+    public interface IStatesBehaviour : IBehaviour
+    {
+        void AddState(string name, IBehaviour behaviour, bool isLaunchState = false);
         void AddTransition(string from, string to, Condition condition);
-        void LaunchState(string name);
     }
-    public delegate bool Condition();  
+    
+    public delegate bool Condition();   
         
     /// <summary>
     /// Написано в спешке, проверок на корректность ввода - почти нет.
     /// тестов тоже нет.
+    /// FSM это дерево поведений с условиями переходов
     /// </summary>
-    public class SimpleFsm : IFsm, ITickable, IFixedTickable, IResettable
+    public class SimpleStatesBehaviour : IStatesBehaviour, IFixedUpdate, IResettable
     {
-        private readonly Dictionary<string, IState> _states = new Dictionary<string, IState>();
-        private readonly Dictionary<IState, List<Condition>> _fromState = new Dictionary<IState, List<Condition>>();
-        private readonly Dictionary<Condition, IState> _toState = new Dictionary<Condition, IState>();
+        private readonly Dictionary<string, IBehaviour> _states = new Dictionary<string, IBehaviour>();
+        private readonly Dictionary<IBehaviour, List<Condition>> _fromState = new Dictionary<IBehaviour, List<Condition>>();
+        private readonly Dictionary<Condition, IBehaviour> _toState = new Dictionary<Condition, IBehaviour>();
 
-        private IState _currentState;
-        private readonly EmptyState _emptyState;
-        private IState _launchState;
-
-        private ITickable _currentTickable;
-        private IFixedTickable _currentFixedTickable;
+        private readonly EmptyBehaviour _emptyBehaviour;
+        private IBehaviour _currentBehaviour;
+        private IBehaviour _launchBehaviour;
+        private IFixedUpdate _currentFixedUpdatable;
+        private bool _isRunning;
         
-        private class EmptyState : IState, ITickable, IFixedTickable
-        {
-            public void Enter() { }
-            public void Exit() { }
-            public void Tick() { }
-            public void FixedTick() { }
-        }
         
-        public SimpleFsm()
+        public SimpleStatesBehaviour()
         {
-            _emptyState = new EmptyState();
-            _currentState = _emptyState;
-            _currentTickable = _emptyState;
-            _currentFixedTickable = _emptyState;
+            _emptyBehaviour = new EmptyBehaviour();
+            _currentBehaviour = _emptyBehaviour;
+            _currentFixedUpdatable = _emptyBehaviour;
         }
 
-        public void AddState(string name, IState state)
+        public void AddState(string name, IBehaviour behaviour, bool isLaunchState = false)
         {
-            _states.Add(name, state);
+            if (isLaunchState && _launchBehaviour != null)
+            {
+                throw new ArgumentException("Launch state already registered");
+            }
+
+            if (isLaunchState)
+            {
+                _launchBehaviour = behaviour;
+            }
+            _states.Add(name, behaviour);
         }
+
+
+
 
         public void AddTransition(string from, string to, Condition condition)
         {
@@ -84,29 +95,39 @@ namespace Core
             _toState.Add(condition, toState);
         }
 
-        public void LaunchState(string name)
+
+        public void Activate()
         {
-            if (_currentState != _emptyState)
+            if (_currentBehaviour != _emptyBehaviour)
             {
                 throw new ArgumentException("Fsm is launched");
             }
 
-            _launchState = _states[name];
-            ChangeState(_launchState);
+            if (_launchBehaviour == null)
+            {
+                throw new ArgumentException("Launch state not registered");
+            }
+            ChangeState(_launchBehaviour);
+            Debug.Log("Fsm is Activate");
         }
 
-        private void ChangeState(IState nextState)
+        public void Deactivate()
         {
-            _currentState.Exit();
-            _currentState = nextState;
-            _currentTickable = _currentState as ITickable ?? _emptyState;
-            _currentFixedTickable = _currentState as IFixedTickable ?? _emptyState;
-            _currentState.Enter();
+            Debug.Log("Fsm is deactivated");
+            ChangeState(_emptyBehaviour);
+        }
+        
+        private void ChangeState(IBehaviour nextBehaviour)
+        {
+            _currentBehaviour.Deactivate();
+            _currentBehaviour = nextBehaviour;
+            _currentFixedUpdatable = _currentBehaviour as IFixedUpdate ?? _emptyBehaviour;
+            _currentBehaviour.Activate();
         }
         
         private void UpdateTransition()
         {
-            if (_fromState.TryGetValue(_currentState, out var conditions))
+            if (_fromState.TryGetValue(_currentBehaviour, out var conditions))
             {
                 foreach (var condition in conditions)
                 {
@@ -120,28 +141,28 @@ namespace Core
             }
         }
 
-        //хак
-        public bool CheckIsInState(string state)
-        {
-            return _currentState == _states[state];
-        }
-
         public void Reset()
         {
-            ChangeState(_launchState);
+            ChangeState(_launchBehaviour);
         }
 
-        public void Tick()
+        public void Update(float deltaTime)
         {
+            if (_currentBehaviour == _emptyBehaviour)
+            {
+                return;
+            }
             UpdateTransition();
-            _currentTickable.Tick();
+            _currentBehaviour.Update(deltaTime);
         }
-
-        public void FixedTick()
+        public void FixedUpdate()
         {
-            _currentFixedTickable.FixedTick();
+            if(_currentFixedUpdatable == _emptyBehaviour)
+            {
+                return;
+            }
+            _currentFixedUpdatable.FixedUpdate();
         }
-
-    
+        
     }
 }

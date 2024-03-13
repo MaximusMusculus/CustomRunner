@@ -1,58 +1,49 @@
 using Core;
-using Game.Animations;
 using Game.Components;
+using Game.Properties;
+using Game.Shared;
 using UnityEngine;
-using VContainer.Unity;
 
 namespace Game.Controllers.Behaviour
 {
-    public class CharacterJump : IState, ITickable
+    public sealed class CharacterJump : IBehaviour
     {
-        private readonly ICharacterContainer _character;
-        private readonly IInput _inputAxis;
+        private readonly IMoveComponent _move;
+        private readonly IPropertyComponent _property;
+        private readonly IInput _input;
+        
         private float _moveSpeed;
         private float _jumpSpeed;
 
-        private IMoveComponent _moveComponent;
-
-        public CharacterJump(ICharacterContainer character, IInput inputAxis)
+        public CharacterJump(IMoveComponent move, IPropertyComponent property, IInput input)
         {
-            _character = character;
-            _inputAxis = inputAxis;
-            if (!character.TryGetComponent(out _moveComponent))
-            {
-                throw new System.Exception("CharacterJump: character does not have move component");
-            }
+            _property = property;
+            _input = input;
+            _move = move;
         }
 
-        public void Enter()
+        public void Activate()
         {
-            _jumpSpeed = 7;// _character.Values.Get(CharacterProperty.JumpSpeed);
-            //throw new NotImplementedException();
-            
-            _character.Animator.SetTrigger(AnimationConstants.OnJump);
-            _character.Animator.SetBool(AnimationConstants.IsGrounded, false);
+            _jumpSpeed = _property.GetValue(TypeProperty.JumpForce);
+            //_character.Animator.SetTrigger(AnimationConstants.OnJump);
+            //_character.Animator.SetBool(AnimationConstants.IsGrounded, false);
         }
-
-        public void Exit()
+        public void Deactivate()
         {
         }
 
-        public void Tick()
+        public void Update(float deltaTime)
         {
-            _moveSpeed = 5; // _character.Values.Get(CharacterProperty.RunSpeed);
-            _jumpSpeed += Physics2D.gravity.y * Time.deltaTime;
-
-            var moveSpeed = new Vector2(_inputAxis.GetAxis().x, 0) * _moveSpeed;
+            _moveSpeed = _property.GetValue(TypeProperty.Speed);
+            var moveSpeed = new Vector2(_input.GetAxis().x, 0) * _moveSpeed;
             var jumpSpeed = Vector2.up * _jumpSpeed;
             var moveDirection = moveSpeed + jumpSpeed;
-            
             var distance = moveDirection.magnitude;
-            _moveComponent.Move(moveDirection.normalized * distance);
+            _move.Move(moveDirection.normalized * distance);
+            
+            _jumpSpeed += Physics2D.gravity.y * Time.deltaTime;
         }
-
-
-
+        
         public bool IsJumpEnd()
         {
             return _jumpSpeed <= 0;

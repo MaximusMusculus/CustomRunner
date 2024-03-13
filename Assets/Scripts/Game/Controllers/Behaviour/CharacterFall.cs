@@ -1,50 +1,47 @@
 using Core;
-using Game.Animations;
 using Game.Components;
+using Game.Properties;
+using Game.Shared;
 using UnityEngine;
-using VContainer.Unity;
 
 namespace Game.Controllers.Behaviour
 {
-    public class CharacterFall : IState, ITickable
+    public sealed class CharacterFall : IBehaviour
     {
-        private readonly ICharacterContainer _character;
         private readonly IMoveComponent _moveComponent;
-        private readonly IInput _inputAxis;
-        
+        private readonly IPropertyComponent _propertyComponent;
+        private readonly IInput _input;
+
         private float _fallSpeed;
         private float _moveSpeed;
 
-        public CharacterFall(ICharacterContainer character, IInput inputAxis)
+        public CharacterFall( IInput input, IMoveComponent moveComponent, IPropertyComponent propertyComponent)
         {
-            _character = character;
-            _inputAxis = inputAxis;
-            if (!character.TryGetComponent(out _moveComponent))
-            {
-                throw new System.Exception("CharacterFall: character does not have move component");
-            }
+            _input = input;
+            _moveComponent = moveComponent;
+            _propertyComponent = propertyComponent;
         }
 
-        public void Enter()
+        public void Activate()
         {
             _fallSpeed = 0;
-            _moveSpeed = 5;
-            _character.Animator.SetBool(AnimationConstants.IsGrounded, false);
+            _moveSpeed = _propertyComponent.GetValue(TypeProperty.Speed);
         }
 
-        public void Exit()
+        public void Deactivate()
         {
         }
 
-        public void Tick()
+        public void Update(float deltaTime)
         {
             _fallSpeed += Physics2D.gravity.y * Time.deltaTime;
-            
-            var move = new Vector2(_inputAxis.GetAxis().x, 0) * _moveSpeed;
+            var move = new Vector2(_input.GetAxis().x, 0) * _moveSpeed;
             var fall = Vector2.up  * _fallSpeed;
             var moveDirection = move + fall;
             var distance = moveDirection.magnitude;
             _moveComponent.Move(moveDirection.normalized * distance);
         }
+
+  
     }
 }

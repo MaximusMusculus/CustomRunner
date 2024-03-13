@@ -1,51 +1,46 @@
 using System;
 using Core;
-using Game.Animations;
 using Game.Components;
+using Game.Properties;
+using Game.Shared;
 using UnityEngine;
-using VContainer.Unity;
 
 namespace Game.Controllers.Behaviour
 {
-    public class CharacterRun : IState, ITickable
+    //стратегия линейного движения персонажа 
+    public sealed class CharacterRun : IBehaviour
     {
-        private readonly ICharacterContainer _character;
-        private readonly IInput _inputAxis;
+        private readonly IMoveComponent _moveComponent;
+        private readonly IPropertyComponent _propertyComponent;
+        
+        private readonly IInput _input;
         private float _runSpeed;
-        private IMoveComponent _moveComponent;
 
-        public CharacterRun(ICharacterContainer character, IInput inputAxis)
+        public CharacterRun( IMoveComponent moveComponent, IPropertyComponent propertyComponent, IInput input)
         {
-            _character = character;
-            _inputAxis = inputAxis;
-            if (!character.TryGetComponent(out _moveComponent))
+            _input = input;
+
+            _moveComponent = moveComponent;
+            _propertyComponent = propertyComponent;
+            if (!propertyComponent.Has(TypeProperty.Speed))
             {
-                throw new Exception("CharacterRun: character does not have move component");
+                throw new ArgumentException("CharacterRun: character does not have speed property");
             }
         }
 
-        public void Enter()
+        public void Activate()
         {
-            _character.Animator.SetBool(AnimationConstants.IsGrounded, true);
+            //_animator.SetBool(AnimationConstants.IsGrounded, true);
             //Animator.SetFloat(AnimationConstants.VelocityXAnimatorId, Mathf.Abs(_runningSpeed) / BaseSpeed);
         }
-        public void Exit()
-        {
-            
-        }
+        public void Deactivate() { }
 
-        public void Tick()
+        
+        public void Update(float deltaTime)
         {
-            _runSpeed = 5; 
-                //_character.BaseValues.Get(CharacterProperty.RunSpeed);
-            var moveX = _inputAxis.GetAxis().x * _runSpeed;
+            _runSpeed = _propertyComponent.GetValue(TypeProperty.Speed);
+            var moveX = _input.GetAxis().x * _runSpeed;
             _moveComponent.Move(new Vector2(moveX, 0));
-        }
-
-        public void FixedTick()
-        {
-            //var speed = _inputAxis.GetAxis().x * _runSpeed * Time.fixedDeltaTime;
-            //_character.Rigidbody.position += new Vector2(speed, 0);
         }
     }
 }

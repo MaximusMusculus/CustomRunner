@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Game.Components;
 using Game.Shared;
 
 namespace Game.Properties

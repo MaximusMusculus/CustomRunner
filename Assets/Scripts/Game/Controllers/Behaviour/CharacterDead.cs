@@ -1,25 +1,31 @@
 using Core;
 using Game.Animations;
+using UnityEngine;
 
 namespace Game.Controllers.Behaviour
 {
-    public class CharacterDead : IState
+    public class CharacterDead : IBehaviour
     {
-        private readonly ICharacterContainer _character;
+        private readonly Animator _animator;
 
-        public CharacterDead(ICharacterContainer character)
+        public CharacterDead(Animator animator)
         {
-            _character = character;
+            _animator = animator;
         }
 
-        public void Enter()
+        public void Activate()
         {
-            _character.Animator.SetBool(AnimationConstants.IsDead, true);
+            _animator.SetBool(AnimationConstants.IsDead, true);
         }
 
-        public void Exit()
+        public void Deactivate()
         {
-            _character.Animator.SetBool(AnimationConstants.IsDead, false);
+            _animator.SetBool(AnimationConstants.IsDead, false);
+        }
+
+        public void Update(float deltaTime)
+        {
+            
         }
     }
 }

@@ -12,11 +12,11 @@ public class TestFsm
     [Test]
     public void Test()
     {
-        var fsm = new SimpleFsm();
+        var fsm = new SimpleStatesBehaviour();
         
-        fsm.AddState("1", new State("1"));
-        fsm.AddState("2", new State("2"));
-        fsm.AddState("3", new State("3"));
+        fsm.AddState("1", new Behaviour("1"), true);
+        fsm.AddState("2", new Behaviour("2"));
+        fsm.AddState("3", new Behaviour("3"));
         
         var from_1_to_2 = new Condition();
         var from_2_to_3 = new Condition();
@@ -27,23 +27,23 @@ public class TestFsm
         fsm.AddTransition("2", "3", from_2_to_3.Check);
         fsm.AddTransition("3", "1", from_3_to_1.Check);
         fsm.AddTransition("3", "2", from_3_to_2.Check);
-        fsm.LaunchState("1");
+        fsm.Activate();
         
-        fsm.Tick();
-        fsm.Tick();
-        fsm.Tick();
+        fsm.Update(1);
+        fsm.Update(1);
+        fsm.Update(1);
         
         from_1_to_2.SetSuccess(true);
-        fsm.Tick();
+        fsm.Update(1);
         from_2_to_3.SetSuccess(true);
-        fsm.Tick();
+        fsm.Update(1);
     }
     
-    public class State : IState, ITickable
+    public class Behaviour : IBehaviour, ITickable
     {
         private string _state;
 
-        public State(string state)
+        public Behaviour(string state)
         {
             _state = state;
         }
@@ -54,14 +54,19 @@ public class TestFsm
             Debug.Log(_state + " tick");
         }
 
-        public void Enter()
+        public void Activate()
         {
             Debug.Log(_state + " enter");
         }
 
-        public void Exit()
+        public void Deactivate()
         {
             Debug.Log(_state + " exit");
+        }
+
+        public void Update(float deltaTime)
+        {
+            Debug.Log(_state + " Update");
         }
     }
     

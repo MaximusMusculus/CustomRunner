@@ -1749,7 +1749,14 @@ MonoBehaviour:
       serializedVersion: 2
       m_Bits: 0
   _playerCharacterConfig:
-    characterPrefabName: Player
+    prefabName: Player
+    viewPrefabName: Player
+    propertyConfig:
+      properties:
+      - property: 0
+        value: 5
+      - property: 1
+        value: 7
   _platformsConfig: {fileID: 11400000, guid: 2920fa415c3611042a87a5d6d3991af8, type: 2}
   _spawnPoint: {fileID: 1541382431}
 --- !u!4 &655875777

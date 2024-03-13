@@ -1,5 +1,6 @@
 using Cinemachine;
 using Core;
+using MessagePipe;
 using UnityEngine;
 using VContainer;
 using VContainer.Unity;
@@ -28,12 +29,19 @@ public class LevelLifeScope : LifetimeScope
     {
         base.Configure(builder);
         
+        var options = builder.RegisterMessagePipe(/* configure option */);
+        //builder.RegisterMessageBroker<CharacterEvent>(options);
+        
+        
+        
         builder.RegisterInstance(layersConfig);
         builder.RegisterInstance(_virtualCamera);
         builder.RegisterInstance(_platformsConfig);
         builder.RegisterInstance(_playerCharacterConfig);
         builder.RegisterInstance(new SimplePlayerSpawnPoint(_spawnPoint)).As<IPlayerSpawnPoint>();
-        
+
+
+        builder.Register<ComponentsFactory>(Lifetime.Singleton).As<IComponentsFactory>();
         builder.Register<SimpleCamera>(Lifetime.Singleton).As<IFollowTarget>();
         builder.Register<Input>(Lifetime.Singleton).As<IInput, ITickable>();
         builder.Register<PlatformFactory>(Lifetime.Singleton).As<IPlatformFactory>();
@@ -41,6 +49,22 @@ public class LevelLifeScope : LifetimeScope
         builder.Register<PlatformPool>(Lifetime.Singleton).As<IPlatformPool, IInitializable>();
         builder.Register<PlatformForPlayerSpawner>(Lifetime.Singleton).As<ITickable, IFollowTarget, IResettable>();
         
-        builder.RegisterEntryPoint<RunnerGame>();
+        
+        //CharactersViewService - сервис при создании персонажа создает его вьюху, которая анимирует и отрисовывает персоеажа
+        //builder.RegisterEntryPoint<RunnerGame>();
+        builder.RegisterEntryPoint<TestCharacter>();
     }
 }
+
+
+
+//-- как заюзать шину событий. какие события там должны быть?
+public enum CharacterEventType
+{
+    OnCreate,
+    OnDead,
+}
+
+
+
+

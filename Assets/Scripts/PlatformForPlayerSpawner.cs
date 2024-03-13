@@ -15,7 +15,15 @@ public class PlatformForPlayerSpawner : ITickable, IFollowTarget, IResettable
     private readonly int _safeZone;
 
     private Transform _followTarget;
-    private float Position => _followTarget.position.x;
+
+    private float Position
+    {
+        get
+        {
+            if (_followTarget == null) return 0;
+            return _followTarget.position.x; 
+        }
+    }
     
     private readonly Queue<IPlatform> _activePlatforms = new Queue<IPlatform>();
     private int _platformNumber;
